@@ -1,0 +1,102 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <script src="sdk/scripts/VSS.SDK.js"></script>
+    <style>
+        .td-picture {
+            width: 40px;
+            height: 40px;
+            vertical-align: top;
+        }
+
+        .td-result-details {
+            padding-right: 4px;
+            vertical-align: top;
+        }
+
+        .changeset-meta {
+            padding-top: 1px;
+        }
+
+            .changeset-meta span {
+                padding-left: 10px;
+                color: gray;
+            }
+    </style>
+</head>
+<body>
+    <div class="widget">
+        <h2 class="title">Recent Code Commits</h2>
+        <div class="content">
+            <div id="items">
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+<script type="text/javascript">
+    function getGridRow(item,baseUrl) {
+        var changeSetUrl = baseUrl+ '_versionControl/changeset/'+item.changesetId;
+        var rowMarkup = '<tr><td class="td-picture"><img src="' + item.author.imageUrl + '" /><td>';
+        rowMarkup += '<td class="td-result-details">';
+        rowMarkup += '<div>';
+        rowMarkup += '<a class="link-with-icon-text" href="' + changeSetUrl + '" target="_blank">' + item.comment + '</a>';
+        rowMarkup += '</div>';
+        rowMarkup += '<div class="subtitle changeset-meta">' + item.author.displayName + '<span>' + getPrettyDate(item.createdDate) + '</span></div>';
+        rowMarkup += '</td></tr>';
+        return rowMarkup;
+    }
+    function getPrettyDate(dt) {
+        var d = new Date(dt);
+        return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+    }
+    VSS.init({
+        explicitNotifyLoaded: true,
+        usePlatformStyles: true
+    });
+
+    VSS.require(["TFS/Dashboards/WidgetHelpers", "VSS/Service", "TFS/VersionControl/TfvcRestClient"], function (WidgetHelpers, VSS_Service, TfvcRestClient) {
+        WidgetHelpers.IncludeWidgetStyles();
+        
+        var client = TfvcRestClient.getClient();
+
+        // Get the Web Context to create the uri
+        var vstsContext = VSS.getWebContext();
+        var projectId = vstsContext.project.id;
+
+        var baseUrl = vstsContext.collection.uri + vstsContext.project.name+'/';
+        VSS.register("RecentCodeCommitsWidget", function () {
+            return {
+                load: function (widgetSettings) {
+
+                    var maxChangeCount = 40 ;
+                    var includeDetails = true;
+                    var includeWorkItems = true;
+                    var maxCommentLength = 10;
+                    var includeSourceRename = false;
+                    var skip = 0;
+                    var top = 7;
+                  
+                    client.getChangesets(projectId, maxChangeCount, includeDetails, includeWorkItems, maxCommentLength, includeSourceRename, skip, top)
+                        .then(function (data) {
+                            console.log(data.length);
+                            var t = $("<table />");
+                            var rowCounter = 0;
+                            $.each(data, function (index, item) {
+                                rowCounter++;
+                                if (rowCounter <= 5) {  // Stupid bug in the getChangesets is returning everything instead of the top value i passed in
+                                    t.append(getGridRow(item, baseUrl));
+                                }
+                            });
+                            $("#items").append(t);
+                        });
+
+                    return WidgetHelpers.WidgetStatusHelper.Success();
+                }
+            }
+        });
+        VSS.notifyLoadSucceeded();
+    });
+</script>
