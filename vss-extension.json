@@ -1,9 +1,29 @@
 {
   "manifestVersion": 1,
   "id": "RecentCodeCommitsExt",
-  "version": "1.0.5",
+  "version": "1.0.8",
   "name": "Recent Code Commits Widget",
-  "description": "See most recent commits to your team project",
+  "description": "See most recent code commits to your team project",
+  "icons": {
+    "default": "img/logo.png"
+  },
+  "categories": [
+    "Plan and track"
+  ],
+  "tags": [
+    "recent code commits",
+    "code commits",
+    "commit history"
+  ],
+  "branding": {
+    "color": "#E6EAED"
+  },
+  "screenshots": [
+    {
+      "path": "img/RecentCodeCommitsScreenShot.png"
+    }
+  ],
+  "public": true,
   "publisher": "kshyju",
   "targets": [
     {
@@ -26,6 +46,10 @@
         "supportedSizes": [
           {
             "rowSpan": 2,
+            "columnSpan": 2
+          },
+          {
+            "rowSpan": 3,
             "columnSpan": 2
           }
         ],

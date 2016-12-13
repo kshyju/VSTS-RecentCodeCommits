@@ -57,42 +57,54 @@
         usePlatformStyles: true
     });
 
-    VSS.require(["TFS/Dashboards/WidgetHelpers", "VSS/Service", "TFS/VersionControl/TfvcRestClient"], function (WidgetHelpers, VSS_Service, TfvcRestClient) {
+    VSS.require(["TFS/Dashboards/WidgetHelpers", "VSS/Service", "TFS/VersionControl/TfvcRestClient","TFS/Work/RestClient"], function (WidgetHelpers, VSS_Service, TfvcRestClient, TfsWorkRestClient) {
         WidgetHelpers.IncludeWidgetStyles();
         
         var client = TfvcRestClient.getClient();
+        var client2 = TfsWorkRestClient.getClient();
 
         // Get the Web Context to create the uri
         var vstsContext = VSS.getWebContext();
         var projectId = vstsContext.project.id;
 
+        var searchCriteria = { fromDate: '' };
+
         var baseUrl = vstsContext.collection.uri + vstsContext.project.name+'/';
         VSS.register("RecentCodeCommitsWidget", function () {
             return {
-                load: function (widgetSettings) {
-
-                    var maxChangeCount = 40 ;
-                    var includeDetails = true;
-                    var includeWorkItems = true;
-                    var maxCommentLength = 10;
-                    var includeSourceRename = false;
+                load: function () {
+                   
+                    var maxCommentLength = 40;
                     var skip = 0;
-                    var top = 7;
+                    var top = 5;
                   
-                    client.getChangesets(projectId, maxChangeCount, includeDetails, includeWorkItems, maxCommentLength, includeSourceRename, skip, top)
-                        .then(function (data) {
-                            console.log(data.length);
-                            var t = $("<table />");
-                            var rowCounter = 0;
-                            $.each(data, function (index, item) {
-                                rowCounter++;
-                                if (rowCounter <= 5) {  // Stupid bug in the getChangesets is returning everything instead of the top value i passed in
-                                    t.append(getGridRow(item, baseUrl));
-                                }
-                            });
-                            $("#items").append(t);
-                        });
 
+                    var widgetTitle = "Recent commits";
+                    var teamContext = { projectId: vstsContext.project.id, teamId: vstsContext.team.id, project: "", team: "" };;
+                    client2.getTeamIterations(teamContext, "current")
+                        .then(function(iterations) {
+
+                            if (iterations.length > 0) {
+                                var currentIteration = iterations[0];
+                                if (currentIteration.attributes.startDate) {
+                                    searchCriteria.fromDate = currentIteration.attributes.startDate;
+                                }
+                                widgetTitle += " in " + currentIteration.name;
+                            }
+                            $("#widgetTitle").text(widgetTitle);
+
+
+                            client.getChangesets(projectId, maxCommentLength, skip, top, null, searchCriteria)
+                                .then(function(data) {
+                                    console.log(data.length);
+                                    var t = $("<table />");
+                                    $.each(data,
+                                        function(index, item) {
+                                            t.append(getGridRow(item, baseUrl));
+                                        });
+                                    $("#items").append(t);
+                                });
+                        });
                     return WidgetHelpers.WidgetStatusHelper.Success();
                 }
             }
