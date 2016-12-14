@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "id": "RecentCodeCommitsExt",
-  "version": "1.0.8",
+  "version": "1.1.8",
   "name": "Recent Code Commits Widget",
   "description": "See most recent code commits to your team project",
   "icons": {
@@ -35,7 +35,8 @@
       "id": "RecentCodeCommitsWidget",
       "type": "ms.vss-dashboards-web.widget",
       "targets": [
-        "ms.vss-dashboards-web.widget-catalog"
+        "ms.vss-dashboards-web.widget-catalog",
+        "kshyju.RecentCodeCommitsExt.RecentCodeCommitsWidgetConfiguration"
       ],
       "properties": {
         "name": "Recent Code Commits",
@@ -56,10 +57,24 @@
         "supportedScopes": [ "project_team" ]
       }
     }
+    , {
+      "id": "RecentCodeCommitsWidgetConfiguration",
+      "type": "ms.vss-dashboards-web.widget-configuration",
+      "targets": [ "ms.vss-dashboards-web.widget-configuration" ],
+      "properties": {
+        "name": "RecentCodeCommits Widget Configuration",
+        "description": "Configures HelloWorldWidget",
+        "uri": "configuration.html"
+      }
+}
   ],
   "files": [
     {
       "path": "index.html",
+      "addressable": true
+    },
+    {
+      "path": "configuration.html",
       "addressable": true
     },
     {

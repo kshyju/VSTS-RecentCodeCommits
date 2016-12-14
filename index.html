@@ -26,7 +26,7 @@
 </head>
 <body>
     <div class="widget">
-        <h2 class="title">Recent Code Commits</h2>
+        <h2 class="title" id="widgetTitle"></h2>
         <div class="content">
             <div id="items">
 
@@ -37,6 +37,7 @@
 </html>
 
 <script type="text/javascript">
+    
     function getGridRow(item,baseUrl) {
         var changeSetUrl = baseUrl+ '_versionControl/changeset/'+item.changesetId;
         var rowMarkup = '<tr><td class="td-picture"><img src="' + item.author.imageUrl + '" /><td>';
@@ -48,16 +49,26 @@
         rowMarkup += '</td></tr>';
         return rowMarkup;
     }
+
     function getPrettyDate(dt) {
         var d = new Date(dt);
         return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
     }
+
+    function getDateFrom(numberOfDaysToCountFrom) {
+        var d = new Date();
+        if (numberOfDaysToCountFrom) {
+            d.setDate(d.getDate() - numberOfDaysToCountFrom);
+        }
+        return d.toLocaleDateString();
+    }
+
     VSS.init({
         explicitNotifyLoaded: true,
         usePlatformStyles: true
     });
 
-    VSS.require(["TFS/Dashboards/WidgetHelpers", "VSS/Service", "TFS/VersionControl/TfvcRestClient","TFS/Work/RestClient"], function (WidgetHelpers, VSS_Service, TfvcRestClient, TfsWorkRestClient) {
+    VSS.require(["TFS/Dashboards/WidgetHelpers", "TFS/VersionControl/TfvcRestClient","TFS/Work/RestClient"], function (WidgetHelpers,  TfvcRestClient, TfsWorkRestClient) {
         WidgetHelpers.IncludeWidgetStyles();
         
         var client = TfvcRestClient.getClient();
@@ -66,46 +77,83 @@
         // Get the Web Context to create the uri
         var vstsContext = VSS.getWebContext();
         var projectId = vstsContext.project.id;
-
+        var $itemsContainer = $("#items");
+        var $widgetTitle = $("#widgetTitle");
         var searchCriteria = { fromDate: '' };
 
         var baseUrl = vstsContext.collection.uri + vstsContext.project.name+'/';
         VSS.register("RecentCodeCommitsWidget", function () {
-            return {
-                load: function () {
-                   
-                    var maxCommentLength = 40;
-                    var skip = 0;
-                    var top = 5;
-                  
 
-                    var widgetTitle = "Recent commits";
-                    var teamContext = { projectId: vstsContext.project.id, teamId: vstsContext.team.id, project: "", team: "" };;
-                    client2.getTeamIterations(teamContext, "current")
-                        .then(function(iterations) {
+            function getData(widgetSettings) {
+                
+                var maxCommentLength = 40;
+                var skip = 0;
+                var top = 5;
+                if (widgetSettings.size.rowSpan === 3) {
+                    top = 9;
+                }
 
-                            if (iterations.length > 0) {
-                                var currentIteration = iterations[0];
-                                if (currentIteration.attributes.startDate) {
-                                    searchCriteria.fromDate = currentIteration.attributes.startDate;
-                                }
-                                widgetTitle += " in " + currentIteration.name;
+                var settings = JSON.parse(widgetSettings.customSettings.data);
+
+                var widgetTitle = "Recent commits";
+                var teamContext = { projectId: vstsContext.project.id, teamId: vstsContext.team.id, project: "", team: "" };;
+                client2.getTeamIterations(teamContext, "current")
+                    .then(function(iterations) {
+                       
+                        var currentSprintStartDate = null;
+                        if (iterations.length > 0) {
+                            var currentIteration = iterations[0];
+                            if (currentIteration.attributes.startDate) {
+                                currentSprintStartDate = currentIteration.attributes.startDate;
                             }
-                            $("#widgetTitle").text(widgetTitle);
+                            widgetTitle = "Recent commits in " + currentIteration.name;
+                        }
+                        
+                        if (settings && settings.dataFor) {
+                            if (settings.dataFor === "7days") {
+                                searchCriteria.fromDate = getDateFrom(7);
+                                widgetTitle = "Recent commits in last 7 days";
+                            }
+                            else if (settings.dataFor === "24hrs") {
+                                searchCriteria.fromDate = getDateFrom(1);
+                                widgetTitle = "Recent commits in last 24 hours";
+                            }
+                            else if (settings.dataFor === "currentsprint") {
+                                searchCriteria.fromDate = currentSprintStartDate;
+                            }
+                            else if (settings.dataFor === "nofilter") {
+                                searchCriteria.fromDate = null;
+                                widgetTitle = "Recent commits";
+                            }
+                        }
+                        $widgetTitle.text(widgetTitle);
 
-
-                            client.getChangesets(projectId, maxCommentLength, skip, top, null, searchCriteria)
-                                .then(function(data) {
-                                    console.log(data.length);
+                        $itemsContainer.empty();
+                        client.getChangesets(projectId, maxCommentLength, skip, top, null, searchCriteria)
+                            .then(function(data) {
+                                
+                                if (data.length === 0) {
+                                    $itemsContainer.append("<p>No commits found for the selected filter :( </p>");
+                                } else {
                                     var t = $("<table />");
                                     $.each(data,
-                                        function(index, item) {
+                                        function (index, item) {
                                             t.append(getGridRow(item, baseUrl));
                                         });
-                                    $("#items").append(t);
-                                });
-                        });
-                    return WidgetHelpers.WidgetStatusHelper.Success();
+                                    $itemsContainer.append(t);
+                                }
+                            });
+                    });
+                return WidgetHelpers.WidgetStatusHelper.Success();
+            }
+            return {
+
+                load: function (widgetSettings) {
+                    return getData(widgetSettings);
+                }
+                ,
+                reload: function (widgetSettings) {
+                    return getData(widgetSettings);
                 }
             }
         });

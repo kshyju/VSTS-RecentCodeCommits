@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <script src="sdk/scripts/VSS.SDK.js"></script>
+    <script type="text/javascript">
+                VSS.init({
+                    explicitNotifyLoaded: true,
+                    usePlatformStyles: true
+                });
+
+                VSS.require("TFS/Dashboards/WidgetHelpers", function (WidgetHelpers) {
+                    VSS.register("RecentCodeCommitsWidgetConfiguration", function () {
+                        var $queryDropdown = $("#data-dropdown");
+
+                        return {
+                            load: function (widgetSettings, widgetConfigurationContext) {
+                                var settings = JSON.parse(widgetSettings.customSettings.data);
+                                if (settings && settings.dataFor) {
+                                    $queryDropdown.val(settings.dataFor);
+                                 }
+
+                                 $queryDropdown.on("change", function () {
+                                     var customSettings = { data: JSON.stringify({ dataFor: $queryDropdown.val() }) };
+                                     var eventName = WidgetHelpers.WidgetEvent.ConfigurationChange;
+                                     var eventArgs = WidgetHelpers.WidgetEvent.Args(customSettings);
+                                     widgetConfigurationContext.notify(eventName, eventArgs);
+                                 });
+
+                                return WidgetHelpers.WidgetStatusHelper.Success();
+                            },
+                            onSave: function() {
+                                var customSettings = {data: JSON.stringify({dataFor: $queryDropdown.val()})};
+                                return WidgetHelpers.WidgetConfigurationSave.Valid(customSettings);
+                            }
+                        }
+                    });
+                    VSS.notifyLoadSucceeded();
+                });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <fieldset>
+            <label class="label">Get data for </label>
+            <select id="data-dropdown" style="margin-top:10px">
+                <option value="nofilter" selected>No filter</option>
+                <option value="currentsprint">Current Sprint</option>
+                <option value="24hrs">Last 24 Hours</option>
+                <option value="7days">Last 7 days</option>
+            </select>
+        </fieldset>
+    </div>
+</body>
+</html>
