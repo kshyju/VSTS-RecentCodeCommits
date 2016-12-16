@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "id": "RecentCodeCommitsExt",
-  "version": "1.1.8",
+  "version": "1.2.1",
   "name": "Recent Code Commits Widget",
   "description": "See most recent code commits to your team project",
   "icons": {
@@ -17,13 +17,7 @@
     },
     "links": {
         "support": {
-            "uri": "https://github.com/kshyju/VSTS-RecentCodeCommits/issues"
-        },
-        "source": {
-            "uri": "https://github.com/kshyju/VSTS-RecentCodeCommits"
-        },
-        "github": {
-            "uri": "https://github.com/kshyju/VSTS-RecentCodeCommits"
+            "uri": "https://www.twitter.com/kshyju"
         }
     },
   "tags": [

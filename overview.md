@@ -16,3 +16,7 @@ You can configure the widget to get data for
 
 
 You can also adjust the size of the widget as needed.
+
+### Questions ? 
+
+If you have a question about the extension, hit me on twitter [@kshyju](https://www.twitter.com/kshyju) 
