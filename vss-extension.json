@@ -10,7 +10,25 @@
   "categories": [
     "Plan and track"
   ],
+  "content": {
+        "details": {
+            "path": "overview.md"   
+        }
+    },
+    "links": {
+        "support": {
+            "uri": "https://github.com/kshyju/VSTS-RecentCodeCommits/issues"
+        },
+        "source": {
+            "uri": "https://github.com/kshyju/VSTS-RecentCodeCommits"
+        },
+        "github": {
+            "uri": "https://github.com/kshyju/VSTS-RecentCodeCommits"
+        }
+    },
   "tags": [
+    "code",
+    "change sets",
     "recent code commits",
     "code commits",
     "commit history"
