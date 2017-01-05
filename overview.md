@@ -1,4 +1,4 @@
-Recent Code Commits Widget helps you to quickly see the recently code commits of your team project in a dashboard widget.
+Recent Code Commits Widget helps you to quickly see the recent commits to  your team project in a dashboard widget.
 
 
 
@@ -14,7 +14,9 @@ You can configure the widget to get data for
 3. Last 24 hours
 4. Everything 
 
+The configure screen also allows you get data from a specific project/source code path. This is really handy when you are interested in monitoring a specific sub direcory/project.
 
+![Configure project path](img/config-sourcepath.png)
 You can also adjust the size of the widget as needed.
 
 ### Questions ? 

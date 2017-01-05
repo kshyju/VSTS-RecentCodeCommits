@@ -26,7 +26,9 @@
 </head>
 <body>
     <div class="widget">
-        <h2 class="title" id="widgetTitle"></h2>
+        <h2 class="title" id="widgetTitle" style="margin-bottom: 4px;"></h2>
+        <div class="description"  style="margin-bottom: 5px;" id="widgetSubTitle"></div>
+
         <div class="content">
             <div id="items">
 
@@ -36,8 +38,7 @@
 </body>
 </html>
 
-<script type="text/javascript">
-    
+<script type="text/javascript">    
     function getGridRow(item,baseUrl) {
         var changeSetUrl = baseUrl+ '_versionControl/changeset/'+item.changesetId;
         var rowMarkup = '<tr><td class="td-picture"><img src="' + item.author.imageUrl + '" /><td>';
@@ -79,7 +80,9 @@
         var projectId = vstsContext.project.id;
         var $itemsContainer = $("#items");
         var $widgetTitle = $("#widgetTitle");
-        var searchCriteria = { fromDate: '' };
+        var $widgetSubTitle = $("#widgetSubTitle");
+
+        var searchCriteria = { fromDate: '', itemPath: '' };
 
         var baseUrl = vstsContext.collection.uri + vstsContext.project.name+'/';
         VSS.register("RecentCodeCommitsWidget", function () {
@@ -95,8 +98,10 @@
 
                 var settings = JSON.parse(widgetSettings.customSettings.data);
 
-                var widgetTitle = "Recent commits";
-                var teamContext = { projectId: vstsContext.project.id, teamId: vstsContext.team.id, project: "", team: "" };;
+                var widgetSubTitle = "";
+                var widgetTitle = "";
+                var projectName = vstsContext.project.id;
+                var teamContext = { projectId: projectName, teamId: vstsContext.team.id, project: "", team: "" };;
                 client2.getTeamIterations(teamContext, "current")
                     .then(function(iterations) {
                        
@@ -108,7 +113,13 @@
                             }
                             widgetTitle = "Recent commits in " + currentIteration.name;
                         }
-                        
+                        if (settings && settings.sourceCodePath) {
+                            searchCriteria.itemPath = settings.sourceCodePath;
+                            widgetSubTitle = settings.sourceCodePath;
+                        }
+                        else {
+                            searchCriteria.itemPath = "";
+                        }
                         if (settings && settings.dataFor) {
                             if (settings.dataFor === "7days") {
                                 searchCriteria.fromDate = getDateFrom(7);
@@ -127,11 +138,10 @@
                             }
                         }
                         $widgetTitle.text(widgetTitle);
-
+                        $widgetSubTitle.text(widgetSubTitle);
                         $itemsContainer.empty();
                         client.getChangesets(projectId, maxCommentLength, skip, top, null, searchCriteria)
-                            .then(function(data) {
-                                
+                            .then(function (data) {
                                 if (data.length === 0) {
                                     $itemsContainer.append("<p>No commits found for the selected filter :( </p>");
                                 } else {
@@ -146,6 +156,8 @@
                     });
                 return WidgetHelpers.WidgetStatusHelper.Success();
             }
+
+
             return {
 
                 load: function (widgetSettings) {
