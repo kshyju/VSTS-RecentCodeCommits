@@ -2,55 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <script src="sdk/scripts/VSS.SDK.js"></script>
-    <script type="text/javascript">
-                VSS.init({
-                    explicitNotifyLoaded: true,
-                    usePlatformStyles: true
-                });
 
-                VSS.require("TFS/Dashboards/WidgetHelpers", function (WidgetHelpers) {
-					WidgetHelpers.IncludeWidgetStyles();
-					
-					WidgetHelpers.IncludeWidgetConfigurationStyles();
-                    VSS.register("RecentCodeCommitsWidgetConfiguration", function () {
-                        var $queryDropdown = $("#data-dropdown");
-						var $sourceCodePath = $("#sourceCodePath");
-
-                        return {
-                            load: function (widgetSettings, widgetConfigurationContext) {
-                                var settings = JSON.parse(widgetSettings.customSettings.data);
-                                if (settings && settings.dataFor) {
-                                    $queryDropdown.val(settings.dataFor);
-                                }
-                                if (settings && settings.sourceCodePath) {
-                                    $sourceCodePath.val(settings.sourceCodePath);
-                                }
-
-                                 $queryDropdown.on("change", function () {
-                                     var customSettings = { data: JSON.stringify({ dataFor: $queryDropdown.val(), sourceCodePath: $sourceCodePath .val()}) };
-                                     var eventName = WidgetHelpers.WidgetEvent.ConfigurationChange;
-                                     var eventArgs = WidgetHelpers.WidgetEvent.Args(customSettings);
-                                     widgetConfigurationContext.notify(eventName, eventArgs);
-                                 });
-
-                                 $sourceCodePath.on("blur", function () {
-                                     var customSettings = { data: JSON.stringify({ dataFor: $queryDropdown.val(), sourceCodePath: $sourceCodePath.val() }) };
-                                     var eventName = WidgetHelpers.WidgetEvent.ConfigurationChange;
-                                     var eventArgs = WidgetHelpers.WidgetEvent.Args(customSettings);
-                                     widgetConfigurationContext.notify(eventName, eventArgs);
-                                 });
-
-                                return WidgetHelpers.WidgetStatusHelper.Success();
-                            },
-                            onSave: function() {
-                                var customSettings = { data: JSON.stringify({ dataFor: $queryDropdown.val(), sourceCodePath: $sourceCodePath.val() }) };
-                                return WidgetHelpers.WidgetConfigurationSave.Valid(customSettings);
-                            }
-                        }
-                    });
-                    VSS.notifyLoadSucceeded();
-                });
-    </script>
 </head>
 <body>
     
@@ -75,7 +27,24 @@
         </div>
 
         </div>
+    <script type="text/javascript">
+        // Initialize the VSS SDK
+       
+        
+        VSS.init(
+        {
+            explicitNotifyLoaded: true,
+            setupModuleLoader: true,
+            usePlatformScripts: true,
+            usePlatformStyles: true
+        });
 
+        VSS.ready(function () {
+            
+            require(["src/RecentCodeCommitsWidgetConfiguration"], function (main) { });
+        });
+         
+    </script>
 
 </body>
 </html>

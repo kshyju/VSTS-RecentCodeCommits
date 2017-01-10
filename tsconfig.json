@@ -1,0 +1,15 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "module": "amd",
+        "moduleResolution": "classic",
+        "target": "es5",
+    "rootDir": "src/",
+        "outDir": "src/",
+        "types": [
+            "vss-web-extension-sdk"
+        ]   
+    
+    },
+    "files": ["src/RecentCodeCommits.ts" ,"src/RecentCodeCommitsWidgetConfiguration.ts","src/main.ts"]
+}

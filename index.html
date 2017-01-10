@@ -2,6 +2,7 @@
 <html>
 <head>
     <script src="sdk/scripts/VSS.SDK.js"></script>
+    
     <style>
         .td-picture {
             width: 40px;
@@ -9,8 +10,8 @@
             vertical-align: top;
         }
         .changeset-author-picture {
-            width: 40px;
-            height: 40px;
+            width: 30px;
+            height: 30px;
         }
         .td-result-details {
             padding-right: 4px;
@@ -41,137 +42,18 @@
 </body>
 </html>
 
-<script type="text/javascript">
-    function getGridRow(item, baseUrl) {
-        var changeSetUrl = baseUrl + '_versionControl/changeset/' + item.changesetId;
-        var rowMarkup = '<tr><td class="td-picture"><img class="changeset-author-picture" src="' + item.author.imageUrl + '" /><td>';
-        rowMarkup += '<td class="td-result-details">';
-        rowMarkup += '<div>';
-        rowMarkup += '<a class="link-with-icon-text" href="' + changeSetUrl + '" target="_blank">' + item.comment + '</a>';
-        rowMarkup += '</div>';
-        rowMarkup += '<div class="subtitle changeset-meta">' + item.author.displayName + '<span>' + getPrettyDate(item.createdDate) + '</span></div>';
-        rowMarkup += '</td></tr>';
-        return rowMarkup;
-    }
-
-    function getPrettyDate(dt) {
-        var d = new Date(dt);
-        return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
-    }
-
-    function getDateFrom(numberOfDaysToCountFrom) {
-        var d = new Date();
-        if (numberOfDaysToCountFrom) {
-            d.setDate(d.getDate() - numberOfDaysToCountFrom);
-        }
-        return d.toLocaleDateString();
-    }
-
-    VSS.init({
-        explicitNotifyLoaded: true,
-        usePlatformStyles: true
-    });
-
-    VSS.require(["TFS/Dashboards/WidgetHelpers", "TFS/VersionControl/TfvcRestClient","TFS/Work/RestClient"], function (WidgetHelpers,  TfvcRestClient, TfsWorkRestClient) {
-        WidgetHelpers.IncludeWidgetStyles();
+    <script type="text/javascript">
         
-        var client = TfvcRestClient.getClient();
-        var client2 = TfsWorkRestClient.getClient();
-
-        // Get the Web Context to create the uri
-        var vstsContext = VSS.getWebContext();
-        var projectId = vstsContext.project.id;
-        var $itemsContainer = $("#items");
-        var $widgetTitle = $("#widgetTitle");
-        var $widgetSubTitle = $("#widgetSubTitle");
-
-        var searchCriteria = { fromDate: '', itemPath: '' };
-
-        var baseUrl = vstsContext.collection.uri + vstsContext.project.name+'/';
-        VSS.register("RecentCodeCommitsWidget", function () {
-
-            function getData(widgetSettings) {
-                
-                var maxCommentLength = 40;
-                var skip = 0;
-                var top = 5;
-                if (widgetSettings.size.rowSpan === 3) {
-                    top = 9;
-                }
-
-                var settings = JSON.parse(widgetSettings.customSettings.data);
-
-                var widgetSubTitle = "";
-                var widgetTitle = "";
-                var projectName = vstsContext.project.id;
-                var teamContext = { projectId: projectName, teamId: vstsContext.team.id, project: "", team: "" };;
-                client2.getTeamIterations(teamContext, "current")
-                    .then(function(iterations) {
-                       
-                        var currentSprintStartDate = null;
-                        if (iterations.length > 0) {
-                            var currentIteration = iterations[0];
-                            if (currentIteration.attributes.startDate) {
-                                currentSprintStartDate = currentIteration.attributes.startDate;
-                            }
-                            widgetTitle = "Recent commits in " + currentIteration.name;
-                        }
-                        if (settings && settings.sourceCodePath) {
-                            searchCriteria.itemPath = settings.sourceCodePath;
-                            widgetSubTitle = settings.sourceCodePath;
-                        }
-                        else {
-                            searchCriteria.itemPath = "";
-                        }
-                        if (settings && settings.dataFor) {
-                            if (settings.dataFor === "7days") {
-                                searchCriteria.fromDate = getDateFrom(7);
-                                widgetTitle = "Recent commits in last 7 days";
-                            }
-                            else if (settings.dataFor === "24hrs") {
-                                searchCriteria.fromDate = getDateFrom(1);
-                                widgetTitle = "Recent commits in last 24 hours";
-                            }
-                            else if (settings.dataFor === "currentsprint") {
-                                searchCriteria.fromDate = currentSprintStartDate;
-                            }
-                            else if (settings.dataFor === "nofilter") {
-                                searchCriteria.fromDate = null;
-                                widgetTitle = "Recent commits";
-                            }
-                        }
-                        $widgetTitle.text(widgetTitle);
-                        $widgetSubTitle.text(widgetSubTitle);
-                        $itemsContainer.empty();
-                        client.getChangesets(projectId, maxCommentLength, skip, top, null, searchCriteria)
-                            .then(function (data) {
-                                if (data.length === 0) {
-                                    $itemsContainer.append("<p>No commits found for the selected filter :( </p>");
-                                } else {
-                                    var t = $("<table />");
-                                    $.each(data,
-                                        function (index, item) {
-                                            t.append(getGridRow(item, baseUrl));
-                                        });
-                                    $itemsContainer.append(t);
-                                }
-                            });
-                    });
-                return WidgetHelpers.WidgetStatusHelper.Success();
-            }
-
-
-            return {
-
-                load: function (widgetSettings) {
-                    return getData(widgetSettings);
-                }
-                ,
-                reload: function (widgetSettings) {
-                    return getData(widgetSettings);
-                }
-            }
+        VSS.init(
+        {
+            explicitNotifyLoaded: true,
+            setupModuleLoader: true,
+            usePlatformScripts: true,
+            usePlatformStyles: true
         });
-        VSS.notifyLoadSucceeded();
-    });
-</script>
+
+        VSS.ready(function () {            
+            require(["src/main"], function (main) { });
+        });
+         
+    </script>
