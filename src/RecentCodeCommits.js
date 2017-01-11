@@ -21,12 +21,18 @@ define(["require", "exports", "TFS/VersionControl/TfvcRestClient", "TFS/Work/Res
             }
             return d.toLocaleDateString();
         };
+        RecentCodeCommits.prototype.getEmptyStringIfUndefined = function (input, replaceValue) {
+            if (typeof input === 'undefined') {
+                return replaceValue;
+            }
+            return input;
+        };
         RecentCodeCommits.prototype.getGridRow = function (item, baseUrl) {
             var changeSetUrl = baseUrl + '_versionControl/changeset/' + item.changesetId;
             var rowMarkup = '<tr><td class="td-picture"><img class="changeset-author-picture" src="' + item.author.imageUrl + '" /><td>';
             rowMarkup += '<td class="td-result-details">';
             rowMarkup += '<div>';
-            rowMarkup += '<a class="link-with-icon-text" href="' + changeSetUrl + '" target="_blank">' + item.comment + '</a>';
+            rowMarkup += '<a class="link-with-icon-text" href="' + changeSetUrl + '" target="_blank">' + this.getEmptyStringIfUndefined(item.comment, "No comments provided !!! ") + '</a>';
             rowMarkup += '</div>';
             rowMarkup += '<div class="subtitle changeset-meta">' + item.author.displayName + '<span>' + this.getPrettyDate(item.createdDate) + '</span></div>';
             rowMarkup += '</td></tr>';

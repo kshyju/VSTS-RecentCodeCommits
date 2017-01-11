@@ -30,12 +30,20 @@ export class RecentCodeCommits {
         }
         return d.toLocaleDateString();
     }
-    private getGridRow(item, baseUrl) {
+    private getEmptyStringIfUndefined(input:string,replaceValue:string):string
+    {
+         if (typeof input === 'undefined' )
+         {
+             return replaceValue;
+         }
+         return input;
+    }
+    private getGridRow(item:TFS_VersionControl_Contracts.TfvcChangesetRef, baseUrl) {
         var changeSetUrl = baseUrl + '_versionControl/changeset/' + item.changesetId;
         var rowMarkup = '<tr><td class="td-picture"><img class="changeset-author-picture" src="' + item.author.imageUrl + '" /><td>';
         rowMarkup += '<td class="td-result-details">';
         rowMarkup += '<div>';
-        rowMarkup += '<a class="link-with-icon-text" href="' + changeSetUrl + '" target="_blank">' + item.comment + '</a>';
+        rowMarkup += '<a class="link-with-icon-text" href="' + changeSetUrl + '" target="_blank">' + this.getEmptyStringIfUndefined(item.comment,"No comments provided !!! ") + '</a>';
         rowMarkup += '</div>';
         rowMarkup += '<div class="subtitle changeset-meta">' + item.author.displayName + '<span>' + this.getPrettyDate(item.createdDate) + '</span></div>';
         rowMarkup += '</td></tr>';
@@ -116,13 +124,13 @@ export class RecentCodeCommits {
                 $itemsContainer.empty();
                
                 tfscRestClient.getChangesets(projectId, maxCommentLength, skip, top, null, searchCriteria) 
-                    .then(function (data)  {
+                    .then(function (data:TFS_VersionControl_Contracts.TfvcChangesetRef[])  {
                         if (data.length === 0) {
                             $itemsContainer.append("<p>No commits found for the selected filter :( </p>");
                         } else {
                             var t = $("<table />");
                             $.each(data,
-                                function (index, item) {
+                                function (index, item:TFS_VersionControl_Contracts.TfvcChangesetRef) {
                                     t.append(_this.getGridRow(item, baseUrl));
                                 });
                             $itemsContainer.append(t);
