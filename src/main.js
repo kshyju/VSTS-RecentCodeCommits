@@ -3,8 +3,7 @@ define(["require", "exports", "src/RecentCodeCommits"], function (require, expor
     VSS.require(["TFS/Dashboards/WidgetHelpers"], function (WidgetHelpers) {
         WidgetHelpers.IncludeWidgetStyles();
         VSS.register("RecentCodeCommitsWidget", function () {
-            var countdownWidget = new RecentCodeCommits.RecentCodeCommits(WidgetHelpers);
-            return countdownWidget;
+            return new RecentCodeCommits.RecentCodeCommits(WidgetHelpers);
         });
         VSS.notifyLoadSucceeded();
     });

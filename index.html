@@ -26,6 +26,50 @@
                 padding-left: 10px;
                 color: gray;
             }
+        .changeset-author {
+            font-size: 26px;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .author-image {
+            height: 50px;
+            width: 50px;
+            text-align: center;
+            display: block;
+            margin-top: 20px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .changeset-time {
+            font-size: 16px;
+            text-align: center;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .changeset-comment {
+            font-size: 24px;
+            text-align: center;
+            font-style: italic;
+            color: rgba(0, 0, 0, .6);
+        }
+        
+        .size-3 .changeset-author {
+            font-size: 31px;
+            margin-top: 11px;
+        }
+        
+        .size-3 .changeset-comment {
+            font-size: 30px;
+        }
+        
+        .size-3 .changeset-time {
+            font-size: 18px;
+            margin-top: 7px;
+            margin-bottom: 7px;
+        }
     </style>
 </head>
 <body>
@@ -36,6 +80,14 @@
         <div class="content">
             <div id="items">
 
+            </div>
+            <div id="itemPreview" data-visible="yes" style="display: none;">
+                <div class="preview-img-container">
+                    <img class="author-image" />
+                </div>
+                <div class="changeset-author"></div>
+                <div class="changeset-time"></div>
+                <div class="changeset-comment"></div>
             </div>
         </div>
     </div>

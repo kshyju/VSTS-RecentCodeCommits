@@ -3,11 +3,19 @@ define(["require", "exports", "TFS/VersionControl/TfvcRestClient", "TFS/Work/Res
     var RecentCodeCommits = (function () {
         function RecentCodeCommits(WidgetHelpers) {
             this.WidgetHelpers = WidgetHelpers;
+            this.previewSlideCounter = 0;
+            this.currentlyShowingItemIndex = -1;
+            this.$itemsContainer = $("#items");
+            this.$widgetTitle = $("#widgetTitle");
+            this.$widgetSubTitle = $("#widgetSubTitle");
+            this.tfscRestClient = TfscRestClient.getClient();
         }
         RecentCodeCommits.prototype.load = function (widgetSettings) {
+            this.widgetSettings = widgetSettings;
             return this.getChangeSetData(widgetSettings);
         };
         RecentCodeCommits.prototype.reload = function (widgetSettings) {
+            this.widgetSettings = widgetSettings;
             return this.getChangeSetData(widgetSettings);
         };
         RecentCodeCommits.prototype.getPrettyDate = function (dt) {
@@ -27,6 +35,9 @@ define(["require", "exports", "TFS/VersionControl/TfvcRestClient", "TFS/Work/Res
             }
             return input;
         };
+        /**
+         * this method returns the HTML markup for the grid/table row
+         */
         RecentCodeCommits.prototype.getGridRow = function (item, baseUrl) {
             var changeSetUrl = baseUrl + '_versionControl/changeset/' + item.changesetId;
             var rowMarkup = '<tr><td class="td-picture"><img class="changeset-author-picture" src="' + item.author.imageUrl + '" /><td>';
@@ -38,14 +49,86 @@ define(["require", "exports", "TFS/VersionControl/TfvcRestClient", "TFS/Work/Res
             rowMarkup += '</td></tr>';
             return rowMarkup;
         };
+        /**
+         * this method queries the API to get the change set, loop through the result array and build the grid row and append.
+         */
+        RecentCodeCommits.prototype.getChangesets = function (projectId, maxCommentLength, skip, top, searchCriteria, baseUrl) {
+            var _this = this;
+            this.tfscRestClient.getChangesets(projectId, maxCommentLength, skip, top, null, searchCriteria)
+                .then(function (data) {
+                if (data.length === 0) {
+                    _this.$itemsContainer.append("<p>No commits found for the selected filter :( </p>");
+                }
+                else {
+                    _this.changeSets = data;
+                    _this.$itemsContainer.empty();
+                    var t = $("<table />");
+                    $.each(data, function (index, item) {
+                        t.append(_this.getGridRow(item, baseUrl));
+                    });
+                    _this.$itemsContainer.append(t);
+                    clearInterval(_this.previewSwitcherIntervalId);
+                    // Setup the timer for showing the slides and list
+                    _this.previewSwitcherIntervalId = setInterval(function () {
+                        _this.switchPreview();
+                    }, 5000);
+                }
+            });
+        };
+        RecentCodeCommits.prototype.switchPreview = function () {
+            var _this = this;
+            var $previewContainer = $("#itemPreview");
+            this.previewSlideCounter++;
+            var totalNumberOfItems = this.changeSets.length;
+            if (this.previewSlideCounter < totalNumberOfItems) {
+                $previewContainer.fadeOut(400, function () {
+                    _this.$itemsContainer.fadeIn();
+                });
+                return;
+            }
+            _this.$itemsContainer.fadeOut();
+            this.currentlyShowingItemIndex = this.currentlyShowingItemIndex + 1;
+            if (this.currentlyShowingItemIndex >= this.changeSets.length) {
+                this.currentlyShowingItemIndex = 0;
+            }
+            var itemToPreview = this.changeSets[this.currentlyShowingItemIndex];
+            $previewContainer.fadeOut(600, function () {
+                _this.updatePreviewTexts(itemToPreview, $previewContainer);
+                $previewContainer.fadeIn();
+            });
+            if (this.previewSlideCounter >= (totalNumberOfItems * 2)) {
+                this.previewSlideCounter = 0;
+            }
+        };
+        RecentCodeCommits.prototype.updatePreviewTexts = function (changeSet, $previewContainer) {
+            var comment = changeSet.comment;
+            if (this.widgetSettings.size.columnSpan === 3 && this.widgetSettings.size.rowSpan === 3) {
+                if (comment.length > 230) {
+                    comment = comment.substr(0, 229) + '...';
+                }
+            }
+            else if (this.widgetSettings.size.columnSpan === 2 && this.widgetSettings.size.rowSpan === 3) {
+                if (comment.length > 200) {
+                    comment = comment.substr(0, 199) + '...';
+                }
+            }
+            else if (this.widgetSettings.size.columnSpan === 2 && this.widgetSettings.size.rowSpan === 2) {
+                if (comment.length > 100) {
+                    comment = comment.substr(0, 99) + '...';
+                }
+            }
+            $previewContainer.find(".changeset-author").text(changeSet.author.displayName);
+            $previewContainer.find(".author-image").attr("src", changeSet.author.imageUrl);
+            $previewContainer.find(".changeset-comment").text('“' + comment + '”');
+            $previewContainer.find(".changeset-time").text(this.getPrettyDate(changeSet.createdDate));
+        };
         RecentCodeCommits.prototype.getChangeSetData = function (widgetSettings) {
             var _this = this;
-            var tfscRestClient = TfscRestClient.getClient();
+            _this.widgetSettings = widgetSettings;
+            $("#itemPreview").removeClass("size-" + widgetSettings.size.columnSpan).addClass("size-" + widgetSettings.size.columnSpan);
             var workRestClient = WorkRestClient.getClient();
-            var $itemsContainer = $("#items");
-            var $widgetTitle = $("#widgetTitle");
-            var $widgetSubTitle = $("#widgetSubTitle");
-            var maxCommentLength = 40;
+            var pollInterval = 60; //seconds
+            var maxCommentLength = 300;
             var skip = 0;
             var top = 5;
             if (widgetSettings.size.rowSpan === 3) {
@@ -98,22 +181,16 @@ define(["require", "exports", "TFS/VersionControl/TfvcRestClient", "TFS/Work/Res
                         widgetTitle = "Recent commits";
                     }
                 }
-                $widgetTitle.text(widgetTitle);
-                $widgetSubTitle.text(widgetSubTitle);
-                $itemsContainer.empty();
-                tfscRestClient.getChangesets(projectId, maxCommentLength, skip, top, null, searchCriteria)
-                    .then(function (data) {
-                    if (data.length === 0) {
-                        $itemsContainer.append("<p>No commits found for the selected filter :( </p>");
-                    }
-                    else {
-                        var t = $("<table />");
-                        $.each(data, function (index, item) {
-                            t.append(_this.getGridRow(item, baseUrl));
-                        });
-                        $itemsContainer.append(t);
-                    }
-                });
+                _this.$widgetTitle.text(widgetTitle);
+                _this.$widgetSubTitle.text(widgetSubTitle);
+                _this.$itemsContainer.empty();
+                var pollIntervalInMilliSeconds = pollInterval * 1000;
+                // Clear previously registered setInterval
+                clearInterval(_this.pollerIntervalId);
+                _this.getChangesets(projectId, maxCommentLength, skip, top, searchCriteria, baseUrl);
+                _this.pollerIntervalId = setInterval(function () {
+                    _this.getChangesets(projectId, maxCommentLength, skip, top, searchCriteria, baseUrl);
+                }, pollIntervalInMilliSeconds);
             });
             return this.WidgetHelpers.WidgetStatusHelper.Success();
         };

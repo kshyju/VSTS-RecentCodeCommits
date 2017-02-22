@@ -4,8 +4,7 @@ VSS.require(["TFS/Dashboards/WidgetHelpers"], (WidgetHelpers) => {
      WidgetHelpers.IncludeWidgetStyles();
        
     VSS.register("RecentCodeCommitsWidget", () => {
-        var countdownWidget = new RecentCodeCommits.RecentCodeCommits(WidgetHelpers);     
-        return countdownWidget;
+        return new RecentCodeCommits.RecentCodeCommits(WidgetHelpers);         
     })
     VSS.notifyLoadSucceeded();
 });

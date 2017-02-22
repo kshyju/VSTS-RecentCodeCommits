@@ -5,17 +5,34 @@ import TFS_VersionControl_Contracts = require("TFS/VersionControl/Contracts");
 
 
 export class RecentCodeCommits {
+
+
+    private widgetSettings: any; // this gets updated only in load & reload. So i am keeping this as global varibale instead of passing it around
+    private previewSlideCounter: number = 0;
+    private currentlyShowingItemIndex: number = -1;
+    private changeSets: TFS_VersionControl_Contracts.TfvcChangesetRef[];
+  
+    private pollerIntervalId: number;
+    private previewSwitcherIntervalId: number;
+    private tfscRestClient: TfscRestClient.TfvcHttpClient3;
+
+    private $itemsContainer = $("#items");
+    private $widgetTitle = $("#widgetTitle");
+    private $widgetSubTitle = $("#widgetSubTitle");
+
     constructor(private WidgetHelpers: any) {
 
+        this.tfscRestClient = TfscRestClient.getClient();
     }
 
 
     public load(widgetSettings) {
-
+        this.widgetSettings = widgetSettings;
         return this.getChangeSetData(widgetSettings);
     }
     public reload(widgetSettings) {
-         return this.getChangeSetData(widgetSettings);
+        this.widgetSettings = widgetSettings;
+        return this.getChangeSetData(widgetSettings);
     }
 
     private getPrettyDate(dt): string {
@@ -30,15 +47,16 @@ export class RecentCodeCommits {
         }
         return d.toLocaleDateString();
     }
-    private getEmptyStringIfUndefined(input:string,replaceValue:string):string
-    {
-         if (typeof input === 'undefined' )
-         {
-             return replaceValue;
-         }
-         return input;
+    private getEmptyStringIfUndefined(input: string, replaceValue: string): string {
+        if (typeof input === 'undefined') {
+            return replaceValue;
+        }
+        return input;
     }
-    private getGridRow(item:TFS_VersionControl_Contracts.TfvcChangesetRef, baseUrl) {
+    /**
+     * this method returns the HTML markup for the grid/table row
+     */
+    private getGridRow(item: TFS_VersionControl_Contracts.TfvcChangesetRef, baseUrl) {
         var changeSetUrl = baseUrl + '_versionControl/changeset/' + item.changesetId;
         var rowMarkup = '<tr><td class="td-picture"><img class="changeset-author-picture" src="' + item.author.imageUrl + '" /><td>';
         rowMarkup += '<td class="td-result-details">';
@@ -50,18 +68,122 @@ export class RecentCodeCommits {
         return rowMarkup;
     }
 
+
+
+    /**
+     * this method queries the API to get the change set, loop through the result array and build the grid row and append.
+     */
+    private getChangesets(projectId: string, maxCommentLength: number, skip: number, top: number, searchCriteria: TFS_VersionControl_Contracts.TfvcChangesetSearchCriteria, baseUrl: string) {
+        var _this = this;
+
+        this.tfscRestClient.getChangesets(projectId, maxCommentLength, skip, top, null, searchCriteria)
+            .then(function (data: TFS_VersionControl_Contracts.TfvcChangesetRef[]) {
+
+                if (data.length === 0) {
+                    _this.$itemsContainer.append("<p>No commits found for the selected filter :( </p>");
+                } else {                   
+                    _this.changeSets = data;
+
+                    _this.$itemsContainer.empty();
+                    var t = $("<table />");
+                    $.each(data,
+                        function (index, item: TFS_VersionControl_Contracts.TfvcChangesetRef) {
+                            t.append(_this.getGridRow(item, baseUrl));
+                        });
+                    _this.$itemsContainer.append(t);
+
+                    clearInterval(_this.previewSwitcherIntervalId);
+
+                    // Setup the timer for showing the slides and list
+                    _this.previewSwitcherIntervalId = setInterval(function () {
+                        _this.switchPreview()
+                    }, 5000);
+
+
+
+                }
+            });
+
+    }
+
+    private switchPreview() {
+        var _this = this;
+        var $previewContainer = $("#itemPreview");
+        this.previewSlideCounter++;
+
+        var totalNumberOfItems = this.changeSets.length;
+      
+        if (this.previewSlideCounter < totalNumberOfItems) {
+            $previewContainer.fadeOut(400, function () {
+                _this.$itemsContainer.fadeIn();
+            });
+            return;
+            //No need to swap the slides  ( we are showing the list now)
+        }
+
+        _this.$itemsContainer.fadeOut();
+
+        this.currentlyShowingItemIndex = this.currentlyShowingItemIndex + 1;
+
+        if (this.currentlyShowingItemIndex >= this.changeSets.length) {
+            this.currentlyShowingItemIndex = 0;
+        }
+        var itemToPreview = this.changeSets[this.currentlyShowingItemIndex];
+
+        $previewContainer.fadeOut(600, function () {
+            _this.updatePreviewTexts(itemToPreview, $previewContainer);
+            $previewContainer.fadeIn();
+        });
+
+        if (this.previewSlideCounter >= (totalNumberOfItems * 2)) {
+            this.previewSlideCounter = 0;
+        }
+
+    }
+
+    private updatePreviewTexts(changeSet: TFS_VersionControl_Contracts.TfvcChangesetRef, $previewContainer: any) {
+
+
+        var comment = changeSet.comment;
+
+        if (this.widgetSettings.size.columnSpan === 3 && this.widgetSettings.size.rowSpan === 3) {
+
+            if (comment.length > 230) {
+                comment = comment.substr(0, 229) + '...'
+            }
+        }
+        else if (this.widgetSettings.size.columnSpan === 2 && this.widgetSettings.size.rowSpan === 3) {
+
+            if (comment.length > 200) {
+                comment = comment.substr(0, 199) + '...'
+            }
+        }
+        else if (this.widgetSettings.size.columnSpan === 2 && this.widgetSettings.size.rowSpan === 2) {
+
+            if (comment.length > 100) {
+                comment = comment.substr(0, 99) + '...'
+            }
+        }
+
+        $previewContainer.find(".changeset-author").text(changeSet.author.displayName);
+        $previewContainer.find(".author-image").attr("src", changeSet.author.imageUrl);
+        $previewContainer.find(".changeset-comment").text('“' + comment + '”');
+        $previewContainer.find(".changeset-time").text(this.getPrettyDate(changeSet.createdDate));
+    }
+
     private getChangeSetData(widgetSettings) {
 
-         var _this=this;
-         
-        var tfscRestClient = TfscRestClient.getClient();
+        var _this = this;
+
+        _this.widgetSettings = widgetSettings;
+
+        $("#itemPreview").removeClass("size-" + widgetSettings.size.columnSpan).addClass("size-" + widgetSettings.size.columnSpan);
+
         var workRestClient = WorkRestClient.getClient();
 
-        var $itemsContainer = $("#items");
-        var $widgetTitle = $("#widgetTitle");
-        var $widgetSubTitle = $("#widgetSubTitle");
+        var pollInterval = 60; //seconds
 
-        var maxCommentLength = 40;
+        var maxCommentLength = 300;
         var skip = 0;
         var top = 5;
         if (widgetSettings.size.rowSpan === 3) {
@@ -119,30 +241,23 @@ export class RecentCodeCommits {
                         widgetTitle = "Recent commits";
                     }
                 }
-                $widgetTitle.text(widgetTitle);
-                $widgetSubTitle.text(widgetSubTitle);
-                $itemsContainer.empty();
-               
-                tfscRestClient.getChangesets(projectId, maxCommentLength, skip, top, null, searchCriteria) 
-                    .then(function (data:TFS_VersionControl_Contracts.TfvcChangesetRef[])  {
-                        if (data.length === 0) {
-                            $itemsContainer.append("<p>No commits found for the selected filter :( </p>");
-                        } else {
-                            var t = $("<table />");
-                            $.each(data,
-                                function (index, item:TFS_VersionControl_Contracts.TfvcChangesetRef) {
-                                    t.append(_this.getGridRow(item, baseUrl));
-                                });
-                            $itemsContainer.append(t);
-                        }
-                    });
+                _this.$widgetTitle.text(widgetTitle);
+                _this.$widgetSubTitle.text(widgetSubTitle);
+                _this.$itemsContainer.empty();
+
+                var pollIntervalInMilliSeconds = pollInterval * 1000;
+
+                // Clear previously registered setInterval
+                clearInterval(_this.pollerIntervalId);
+                _this.getChangesets(projectId, maxCommentLength, skip, top, searchCriteria, baseUrl);
+
+
+                _this.pollerIntervalId = setInterval(function () {
+                    _this.getChangesets(projectId, maxCommentLength, skip, top, searchCriteria, baseUrl)
+                }, pollIntervalInMilliSeconds);
+
+
             });
-
-
-
-
-
-
 
         return this.WidgetHelpers.WidgetStatusHelper.Success();
     }

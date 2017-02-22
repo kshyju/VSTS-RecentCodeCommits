@@ -1,18 +1,18 @@
 {
-  "manifestVersion": 1,
-  "id": "RecentCodeCommitsExt",
-  "version": "2.0.3",
-  "name": "Recent Code Commits Widget",
-  "description": "See most recent code commits to your team project",
-  "icons": {
-    "default": "img/logo.png"
-  },
-  "categories": [
-    "Plan and track"
-  ],
-  "content": {
+    "manifestVersion": 1,
+    "id": "RecentCodeCommitsExt",
+    "version": "2.0.4",
+    "name": "Recent Code Commits Widget",
+    "description": "See most recent code commits to your team project",
+    "icons": {
+        "default": "img/logo.png"
+    },
+    "categories": [
+        "Plan and track"
+    ],
+    "content": {
         "details": {
-            "path": "overview.md"   
+            "path": "overview.md"
         }
     },
     "links": {
@@ -20,104 +20,93 @@
             "uri": "https://www.twitter.com/kshyju"
         }
     },
-  "tags": [
-    "code",
-    "change sets",
-    "recent code commits",
-    "code commits",
-    "commit history"
-  ],
-  "branding": {
-    "color": "#E6EAED"
-  },
-  "screenshots": [
-    {
-      "path": "img/RecentCodeCommitsScreenShot.png"
-    }
-  ],
-  "public": true,
-  "publisher": "kshyju",
-  "targets": [
-    {
-      "id": "Microsoft.VisualStudio.Services"
-    }
-  ],
-  "contributions": [
-    {
-      "id": "RecentCodeCommitsWidget",
-      "type": "ms.vss-dashboards-web.widget",
-      "targets": [
-        "ms.vss-dashboards-web.widget-catalog",
-        "kshyju.RecentCodeCommitsExt.RecentCodeCommitsWidgetConfiguration"
-      ],
-      "properties": {
-        "name": "Recent Code Commits",
-        "description": "Simple widget to show the most recent code commits",
-        "catalogIconUrl:": "img/logo.png",
-        "previewImageUrl": "img/logo.png",
-        "uri": "index.html",
-        "supportedSizes": [
-          {
-            "rowSpan": 2,
-            "columnSpan": 2
-          },
-          {
-            "rowSpan": 3,
-            "columnSpan": 2
-          },
-          {
-            "rowSpan": 3,
-            "columnSpan":3
-          }
+    "tags": [
+        "code",
+        "change sets",
+        "recent code commits",
+        "code commits",
+        "commit history"
+    ],
+    "branding": {
+        "color": "#E6EAED"
+    },
+    "screenshots": [{
+        "path": "img/RecentCodeCommitsScreenShot.png"
+    }],
+    "public": true,
+    "publisher": "kshyju",
+    "targets": [{
+        "id": "Microsoft.VisualStudio.Services"
+    }],
+    "contributions": [{
+        "id": "RecentCodeCommitsWidget",
+        "type": "ms.vss-dashboards-web.widget",
+        "targets": [
+            "ms.vss-dashboards-web.widget-catalog",
+            "kshyju.RecentCodeCommitsExt.RecentCodeCommitsWidgetConfiguration"
         ],
-        "supportedScopes": [ "project_team" ]
-      }
-    }
-    , {
-      "id": "RecentCodeCommitsWidgetConfiguration",
-      "type": "ms.vss-dashboards-web.widget-configuration",
-      "targets": [ "ms.vss-dashboards-web.widget-configuration" ],
-      "properties": {
-        "name": "RecentCodeCommits Widget Configuration",
-        "description": "Configures HelloWorldWidget",
-        "uri": "configuration.html"
-      }
-}
-  ],
-  "files": [
-    {
-      "path": "index.html",
-      "addressable": true
-    },
-    {
-      "path": "configuration.html",
-      "addressable": true
-    },
-    {
-      "path": "sdk/scripts",
-      "addressable": true
-    },    
-    {
-      "path": "src/main.js",
-      "addressable": true
-    }
-    ,    
-    {
-      "path": "src/RecentCodeCommits.js",
-      "addressable": true
-    }
-    ,    
-    {
-      "path": "src/RecentCodeCommitsWidgetConfiguration.js",
-      "addressable": true
-    },
-    {
-      "path": "img",
-      "addressable": true
-    }
-  ],
-  "scopes": [
-    "vso.work",
-    "vso.code"
-  ]
+        "properties": {
+            "name": "Recent Code Commits",
+            "description": "Simple widget to show the most recent code commits",
+            "catalogIconUrl:": "img/logo.png",
+            "previewImageUrl": "img/logo.png",
+            "uri": "index.html",
+            "supportedSizes": [{
+                    "rowSpan": 2,
+                    "columnSpan": 2
+                },
+                {
+                    "rowSpan": 3,
+                    "columnSpan": 2
+                },
+                {
+                    "rowSpan": 3,
+                    "columnSpan": 3
+                }
+            ],
+            "supportedScopes": ["project_team"]
+        }
+    }, {
+        "id": "RecentCodeCommitsWidgetConfiguration",
+        "type": "ms.vss-dashboards-web.widget-configuration",
+        "targets": ["ms.vss-dashboards-web.widget-configuration"],
+        "properties": {
+            "name": "RecentCodeCommits Widget Configuration",
+            "description": "Configures HelloWorldWidget",
+            "uri": "configuration.html"
+        }
+    }],
+    "files": [{
+            "path": "index.html",
+            "addressable": true
+        },
+        {
+            "path": "configuration.html",
+            "addressable": true
+        },
+        {
+            "path": "sdk/scripts",
+            "addressable": true
+        },
+        {
+            "path": "src/main.js",
+            "addressable": true
+        },
+        {
+            "path": "src/RecentCodeCommits.js",
+            "addressable": true
+        },
+        {
+            "path": "src/RecentCodeCommitsWidgetConfiguration.js",
+            "addressable": true
+        },
+        {
+            "path": "img",
+            "addressable": true
+        }
+    ],
+    "scopes": [
+        "vso.work",
+        "vso.code"
+    ]
 }
