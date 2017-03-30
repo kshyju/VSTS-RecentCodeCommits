@@ -1,6 +1,6 @@
 Recent Code Commits Widget helps you to quickly see the recent commits to  your team project in a dashboard widget.
 
-Each commits will be displayed as a slide show as well.
+Commits will be displayed as a slide show as well.
 
 
 ![st](https://kshyju.gallerycdn.vsassets.io/extensions/kshyju/recentcodecommitsext/1.1.8/1481733819715/Microsoft.VisualStudio.Services.Screenshots.1)
