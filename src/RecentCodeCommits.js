@@ -140,7 +140,7 @@ define(["require", "exports", "TFS/VersionControl/TfvcRestClient", "TFS/Work/Res
             };
             var vstsContext = VSS.getWebContext();
             var projectId = vstsContext.project.id;
-            var baseUrl = vstsContext.collection.uri + vstsContext.project.name + '/';
+            var baseUrl = vstsContext.collection.uri + vstsContext.project.name + '/' + vstsContext.team.name + '/';
             var settings = JSON.parse(widgetSettings.customSettings.data);
             var widgetSubTitle = "";
             var widgetTitle = "";
