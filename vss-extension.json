@@ -1,7 +1,7 @@
 {
     "manifestVersion": 1,
     "id": "RecentCodeCommitsExt",
-    "version": "2.0.5",
+    "version": "2.0.7",
     "name": "Recent Code Commits Widget",
     "description": "See most recent code commits to your team project",
     "icons": {

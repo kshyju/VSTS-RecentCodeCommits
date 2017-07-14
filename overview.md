@@ -3,7 +3,7 @@ Recent Code Commits Widget helps you to quickly see the recent commits to  your 
 Commits will be displayed as a slide show as well.
 
 
-![st](https://kshyju.gallerycdn.vsassets.io/extensions/kshyju/recentcodecommitsext/1.1.8/1481733819715/Microsoft.VisualStudio.Services.Screenshots.1)
+![st](img/recent-code-commits.gif)
 
 
 
@@ -18,6 +18,9 @@ The configure screen also allows you get data from a specific project/source cod
 
 ![Configure project path](img/config-sourcepath.png)
 You can also adjust the size of the widget as needed.
+
+By default,the extension will pick a suitable title for your widget based on the data it is displaying, but you can overwrite it by providing a custom title.
+
 
 ### Questions ? 
 

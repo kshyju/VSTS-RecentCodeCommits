@@ -241,6 +241,12 @@ export class RecentCodeCommits {
                         widgetTitle = "Recent commits";
                     }
                 }
+
+                //If user provided a custom title, let's use that
+                if (settings && settings.title && settings.title.length>0 && settings.title!=='') {
+                    widgetTitle = settings.title;
+                }
+
                 _this.$widgetTitle.text(widgetTitle);
                 _this.$widgetSubTitle.text(widgetSubTitle);
                 _this.$itemsContainer.empty();

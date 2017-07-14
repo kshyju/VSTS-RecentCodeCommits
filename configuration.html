@@ -20,6 +20,13 @@
                 </div>
             </div>
             <div class="single-line-text-input" style="margin-top: 10px;">
+                <label>Widget title</label>
+                <input type="text" id="customWidgetTitle" placeholder="Widget title" maxlength="200" />
+                <span class="inline-error-configuration"><span class="inline-error-text"><i>Specify a custom title for your widget. Leave empty for the extension to pick one for you</i></span></span>
+
+            </div>
+
+            <div class="single-line-text-input" style="margin-top: 10px;">
                 <label>Source code path</label>
                 <input type="text" id="sourceCodePath" placeholder="Your source code path(ex: $/Foo/Bar )" />
                 <span class="inline-error-configuration"><span class="inline-error-text"><i>Specify the TFS source code path here. Leave empty to get data from the root project</i></span></span>
@@ -29,10 +36,9 @@
         </div>
     <script type="text/javascript">
         // Initialize the VSS SDK
-       
-        
-        VSS.init(
-        {
+
+
+        VSS.init({
             explicitNotifyLoaded: true,
             setupModuleLoader: true,
             usePlatformScripts: true,
