@@ -73,7 +73,7 @@ export class RecentCodeCommits {
     /**
      * this method queries the API to get the change set, loop through the result array and build the grid row and append.
      */
-    private getChangesets(projectId: string, maxCommentLength: number, skip: number, top: number, searchCriteria: TFS_VersionControl_Contracts.TfvcChangesetSearchCriteria, baseUrl: string) {
+    private getChangesets(projectId: string, maxCommentLength: number, skip: number, top: number, searchCriteria: TFS_VersionControl_Contracts.TfvcChangesetSearchCriteria, baseUrl: string, shouldEnableSlideShow: boolean) {
         var _this = this;
 
         this.tfscRestClient.getChangesets(projectId, maxCommentLength, skip, top, null, searchCriteria)
@@ -94,12 +94,12 @@ export class RecentCodeCommits {
 
                     clearInterval(_this.previewSwitcherIntervalId);
 
-                    // Setup the timer for showing the slides and list
-                    _this.previewSwitcherIntervalId = setInterval(function () {
-                        _this.switchPreview()
-                    }, 5000);
-
-
+                    if (shouldEnableSlideShow) {
+                        // Setup the timer for showing the slides and list
+                        _this.previewSwitcherIntervalId = setInterval(function () {
+                            _this.switchPreview()
+                        }, 5000);
+                    }
 
                 }
             });
@@ -201,6 +201,7 @@ export class RecentCodeCommits {
         var baseUrl = vstsContext.collection.uri + vstsContext.project.name + '/'+vstsContext.team.name+'/';
         var settings = JSON.parse(widgetSettings.customSettings.data);
 
+        var shouldEnableSlideShow = false;
         var widgetSubTitle = "";
         var widgetTitle = "";
         var projectName = vstsContext.project.id;
@@ -215,6 +216,9 @@ export class RecentCodeCommits {
                         currentSprintStartDate = currentIteration.attributes.startDate;
                     }
                     widgetTitle = "Recent commits in " + currentIteration.name;
+                }
+                if (settings && settings.enableSlideshow) {
+                    shouldEnableSlideShow = settings.enableSlideshow;
                 }
                 if (settings && settings.sourceCodePath) {
                     searchCriteria.itemPath = settings.sourceCodePath;
@@ -255,11 +259,11 @@ export class RecentCodeCommits {
 
                 // Clear previously registered setInterval
                 clearInterval(_this.pollerIntervalId);
-                _this.getChangesets(projectId, maxCommentLength, skip, top, searchCriteria, baseUrl);
+                _this.getChangesets(projectId, maxCommentLength, skip, top, searchCriteria, baseUrl, shouldEnableSlideShow);
 
 
                 _this.pollerIntervalId = setInterval(function () {
-                    _this.getChangesets(projectId, maxCommentLength, skip, top, searchCriteria, baseUrl)
+                    _this.getChangesets(projectId, maxCommentLength, skip, top, searchCriteria, baseUrl, shouldEnableSlideShow)
                 }, pollIntervalInMilliSeconds);
 
 

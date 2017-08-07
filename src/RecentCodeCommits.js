@@ -52,7 +52,7 @@ define(["require", "exports", "TFS/VersionControl/TfvcRestClient", "TFS/Work/Res
         /**
          * this method queries the API to get the change set, loop through the result array and build the grid row and append.
          */
-        RecentCodeCommits.prototype.getChangesets = function (projectId, maxCommentLength, skip, top, searchCriteria, baseUrl) {
+        RecentCodeCommits.prototype.getChangesets = function (projectId, maxCommentLength, skip, top, searchCriteria, baseUrl, shouldEnableSlideShow) {
             var _this = this;
             this.tfscRestClient.getChangesets(projectId, maxCommentLength, skip, top, null, searchCriteria)
                 .then(function (data) {
@@ -68,10 +68,12 @@ define(["require", "exports", "TFS/VersionControl/TfvcRestClient", "TFS/Work/Res
                     });
                     _this.$itemsContainer.append(t);
                     clearInterval(_this.previewSwitcherIntervalId);
-                    // Setup the timer for showing the slides and list
-                    _this.previewSwitcherIntervalId = setInterval(function () {
-                        _this.switchPreview();
-                    }, 5000);
+                    if (shouldEnableSlideShow) {
+                        // Setup the timer for showing the slides and list
+                        _this.previewSwitcherIntervalId = setInterval(function () {
+                            _this.switchPreview();
+                        }, 5000);
+                    }
                 }
             });
         };
@@ -142,6 +144,7 @@ define(["require", "exports", "TFS/VersionControl/TfvcRestClient", "TFS/Work/Res
             var projectId = vstsContext.project.id;
             var baseUrl = vstsContext.collection.uri + vstsContext.project.name + '/' + vstsContext.team.name + '/';
             var settings = JSON.parse(widgetSettings.customSettings.data);
+            var shouldEnableSlideShow = false;
             var widgetSubTitle = "";
             var widgetTitle = "";
             var projectName = vstsContext.project.id;
@@ -156,6 +159,9 @@ define(["require", "exports", "TFS/VersionControl/TfvcRestClient", "TFS/Work/Res
                         currentSprintStartDate = currentIteration.attributes.startDate;
                     }
                     widgetTitle = "Recent commits in " + currentIteration.name;
+                }
+                if (settings && settings.enableSlideshow) {
+                    shouldEnableSlideShow = settings.enableSlideshow;
                 }
                 if (settings && settings.sourceCodePath) {
                     searchCriteria.itemPath = settings.sourceCodePath;
@@ -191,9 +197,9 @@ define(["require", "exports", "TFS/VersionControl/TfvcRestClient", "TFS/Work/Res
                 var pollIntervalInMilliSeconds = pollInterval * 1000;
                 // Clear previously registered setInterval
                 clearInterval(_this.pollerIntervalId);
-                _this.getChangesets(projectId, maxCommentLength, skip, top, searchCriteria, baseUrl);
+                _this.getChangesets(projectId, maxCommentLength, skip, top, searchCriteria, baseUrl, shouldEnableSlideShow);
                 _this.pollerIntervalId = setInterval(function () {
-                    _this.getChangesets(projectId, maxCommentLength, skip, top, searchCriteria, baseUrl);
+                    _this.getChangesets(projectId, maxCommentLength, skip, top, searchCriteria, baseUrl, shouldEnableSlideShow);
                 }, pollIntervalInMilliSeconds);
             });
             return this.WidgetHelpers.WidgetStatusHelper.Success();
